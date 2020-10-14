@@ -1,0 +1,4 @@
+name: TimeShatter
+version: ${project.version}
+main: me.domirusz24.pk.timeshatter.timeshatter.TimeShatter
+authors: [DomiRusz24]
