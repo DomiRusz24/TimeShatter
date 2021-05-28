@@ -44,17 +44,19 @@ public class TimeShatter extends SpiritAbility implements AddonAbility {
     public static HashSet<TempBlock> createZone(Location loc, int radius) {
         HashSet<TempBlock> tempBlocks = new HashSet<>();
         for (Location l : GeneralMethods.getCircle(loc, radius, 1, true, true, 0)) {
-            if (!GeneralMethods.isSolid(l.getBlock())) {
-                TempBlock tb;
-                Block b = l.getBlock();
+            TempBlock tb;
+            Block b = l.getBlock();
+            if (GeneralMethods.isSolid(b)) {
+                tb = new TempBlock(b, b.getType(), b.getData());
+            } else {
                 int ch = (int) (Math.random() * 100);
                 if (ch <= 50) {
                     tb = new TempBlock(b, Material.STAINED_GLASS, (byte) 2);
                 } else {
                     tb = new TempBlock(b, Material.STAINED_GLASS, (byte) 3);
                 }
-                tempBlocks.add(tb);
             }
+            tempBlocks.add(tb);
         }
         return tempBlocks;
     }
@@ -153,8 +155,7 @@ public class TimeShatter extends SpiritAbility implements AddonAbility {
     public TimeShatter(Player player) {
         super(player);
         if (bPlayer.isOnCooldown(this)) return;
-        TimeShatter oldShatter = getAbility(player, TimeShatter.class);
-        if (oldShatter != null) {
+        if (getAbility(player, TimeShatter.class) != null) {
             return;
         }
         start();
@@ -188,15 +189,19 @@ public class TimeShatter extends SpiritAbility implements AddonAbility {
                 removeAbility();
                 return;
             }
-            if (chargedTime == chargeTime && player.isSneaking()) {
-                if (tick % 3 == 0) displaySphere(player, 2, true);
-            } else if (player.isSneaking()) {
-                if (tick % 3 == 0) {
-                    float effec = (float) chargedTime / chargeTime;
-                    effec = effec * 2;
-                    displaySphere(player, effec, false);
+            if (player.isSneaking()) {
+                if (chargedTime != chargeTime) {
+                    chargedTime++;
                 }
-                chargedTime++;
+                if (tick % 3 == 0) {
+                    if (chargedTime == chargeTime) {
+                        displaySphere(player, 2, true);
+                    } else {
+                        float effec = (float) chargedTime / chargeTime;
+                        effec = effec * 2;
+                        displaySphere(player, effec, false);
+                    }
+                }
             } else {
                 this.location = player.getLocation().clone();
                 bPlayer.addCooldown(this);
